@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>visual-explainer card</title>
+<style>
+  /* ---- design tokens：改这里就能整体换配色 ---- */
+  :root{
+    --bg:#ffffff; --card:#f6f9fd; --line:#d7e0ec; --ink:#16202c; --mute:#5c6b7d;
+    --blue:#2563eb;   /* 中性 / 流程 */
+    --green:#15a34a;  /* 正确 / 生效 */
+    --red:#dc2626;    /* 故障 / 断点 */
+    --amber:#c2760a;  /* 注意 */
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased}
+
+  /* ---- 卡片隔离：单张渲染时只显示被 #锚点 指向的那一张 ---- */
+  section{display:none;width:1240px;padding:32px 42px 36px}
+  section:target{display:block}
+  body:not(:has(:target)) section{display:block}
+
+  /* ---- 排版基元 ---- */
+  .kicker{font-size:12.5px;letter-spacing:.16em;color:var(--blue);font-weight:700;margin:0 0 6px}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:-.01em;line-height:1.25}
+  .sub{font-size:13.5px;color:var(--mute);margin:0 0 20px;line-height:1.65}
+  .row{display:flex;align-items:stretch;gap:12px}
+  .box{flex:1;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px}
+  .box h3{margin:0 0 6px;font-size:15.5px}
+  .box p{margin:0;font-size:12px;color:var(--mute);line-height:1.6}
+  .tag{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:999px;
+       background:#e8f0fe;color:var(--blue);font-weight:700;margin-bottom:8px}
+  .arrow{flex:0 0 104px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+  .arrow b{font-size:24px;color:var(--blue);line-height:1}
+  .arrow span{font-size:10.5px;color:var(--mute);margin-top:6px;line-height:1.45}
+  .dead{border-style:dashed;border-color:#f0b9b9;background:#fff7f7}
+  .err{background:#fdecec;border:1.5px solid #f6c9c9;border-radius:10px;padding:9px 11px;color:var(--red);
+       font-family:Consolas,monospace;font-size:11px;line-height:1.55;word-break:break-word}
+  .ok{background:#eafaf0;border:1.5px solid #bfe9d0;border-radius:10px;padding:9px 11px;color:#0f7a37;
+      font-family:Consolas,monospace;font-size:11px;line-height:1.55}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--mute);font-weight:600;font-size:11px;letter-spacing:.05em}
+  .pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:10.5px;font-weight:700}
+  .pill.r{background:#fdecec;color:var(--red)}
+  .pill.g{background:#eafaf0;color:var(--green)}
+  .foot{margin-top:16px;font-size:11px;color:var(--mute)}
+  .mono{font-family:Consolas,monospace}
+  .num{font-variant-numeric:tabular-nums}
+  .big{font-size:30px;font-weight:700;letter-spacing:-.02em}
+  .lane{display:flex;gap:12px;margin-top:12px}
+  .lane>div{flex:1}
+  .stack{display:flex;flex-direction:column;gap:8px}
+
+  /* ---- 名词 → 图：把 visual_terms 解释过的词落到图上的位置 ---- */
+  .term{display:flex;gap:12px;align-items:flex-start;background:var(--card);
+        border:1.5px solid var(--line);border-radius:12px;padding:11px 14px}
+  .term b{flex:0 0 150px;font-size:14px;color:var(--blue);line-height:1.5;font-weight:700}
+  .term span{flex:1;font-size:12px;color:var(--mute);line-height:1.6}
+  .term em{flex:0 0 270px;font-style:normal;font-size:11px;color:#1f3b5c;
+           background:#eaf1fa;border-radius:8px;padding:6px 9px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     卡片 1：一张卡 = 一个结论。
+     复制这段 <section> 来加卡；id 必须是 fg1、fg2、fg3…（渲染脚本靠它识别）。
+     高度预算 ≈800px，超了就把内容拆到下一张。
+     ============================================================ -->
+<section id="fg1">
+  <p class="kicker">01 · 先看清角色</p>
+  <h1>标题写成一句结论，不要写成标签</h1>
+  <p class="sub">一到两句话交代前提。让完全不懂的人也能跟上：先说<b>为什么</b>，再说<b>怎么</b>。</p>
+
+  <div class="row">
+    <div class="box">
+      <span class="tag">角色 A</span>
+      <h3>它负责什么</h3>
+      <p>一句话说清职责边界，以及它<b>不是</b>干什么的。</p>
+    </div>
+    <div class="arrow">
+      <b>→</b><span>「它发出什么」<br>关键参数</span>
+    </div>
+    <div class="box">
+      <span class="tag">角色 B</span>
+      <h3>它负责什么</h3>
+      <p>同上。</p>
+    </div>
+  </div>
+
+  <p class="foot">底部放"钱句子"：一句话，读者看完能复述给别人。</p>
+</section>
+
+<!-- 卡片 2：并用"错/对"对比，或"配置 vs 结果" -->
+<section id="fg2">
+  <p class="kicker">02 · 断点／取舍</p>
+  <h1>把"坏在哪"和"怎么验证"并排放</h1>
+  <p class="sub">引号里的报错、表格里的数字，<b>一律从真实日志复制</b>；编造的例子会毁掉可信度。</p>
+
+  <div class="lane">
+    <div class="box" style="background:#fff7f7;border-color:#f0b9b9">
+      <h3 style="color:var(--red)">✕ 坏的样子</h3>
+      <div class="err" style="margin-top:8px">原文报错贴在这里<br>（连行号/字段名一起贴，越具体越可信）</div>
+    </div>
+    <div class="box" style="background:#f4fbf6;border-color:#bfe9d0">
+      <h3 style="color:var(--green)">✓ 好的样子</h3>
+      <div class="ok" style="margin-top:8px">修复后的真实输出</div>
+    </div>
+  </div>
+
+  <div class="box" style="margin-top:16px">
+    <h3>一张表把证据钉死</h3>
+    <table style="margin-top:6px">
+      <tr><th>我做的动作</th><th>观察到的结果</th><th>说明什么</th></tr>
+      <tr><td class="mono">命令/请求</td><td><span class="pill r">405</span></td><td>推断</td></tr>
+      <tr><td class="mono">命令/请求</td><td><span class="pill g">200</span></td><td>推断</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- 卡片 3：名词 → 图里的位置。
+     先用 visual_terms 在回答开头解释名词，再在这张卡上把每个词落到图里的某个框/步骤：
+     这就是"先解释、后画图"的桥接卡。没有需要复述的名词时，可以整张删掉。 -->
+<section id="fg3">
+  <p class="kicker">03 · 名词 → 图里在哪</p>
+  <h1>前面解释过的词，在图上都要有落点</h1>
+  <p class="sub">左边是名词轮里解释过的词，中间是一句人话，右边是它在本图里对应的框或步骤。<b>图上不要出现没解释过的新名词</b>。</p>
+
+  <div class="stack" style="margin-top:14px">
+    <div class="term">
+      <b>名词 A</b>
+      <span>一句大白话解释，直接从名词轮那段话里搬过来</span>
+      <em>图里的「哪个框」/「第几步」</em>
+    </div>
+    <div class="term">
+      <b>名词 B</b>
+      <span>同上，不要换成另一套说法</span>
+      <em>同上</em>
+    </div>
+    <div class="term">
+      <b>名词 C</b>
+      <span>同上</span>
+      <em>同上</em>
+    </div>
+  </div>
+
+  <p class="foot">读图顺序：先看上面那段名词解释，再在这张表里找到词在图上的位置，最后才看具体的流程图。</p>
+</section>
+
+<script>
+  /* 渲染脚本靠这一行拿到真实内容高度，从而裁掉图片底部的多余空白。
+     注意：不能用 documentElement.scrollHeight —— 内容比视口矮时它返回视口高度，
+     三张卡就会都变成同样的尺寸。要量"可见 section 的最下沿"。
+     不要删；也可以用 --height 固定高度绕过测量。 */
+  addEventListener('load', function () {
+    var max = 0;
+    document.querySelectorAll('section').forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.height > 0) max = Math.max(max, r.bottom + window.scrollY);
+    });
+    document.title = 'h=' + (Math.ceil(max) || 0);
+  });
+</script>
+</body>
+</html>

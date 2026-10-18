@@ -1,0 +1,23 @@
+# dsh-visual-explainer — profile bundle patch.
+#
+# A bundle is a package whose package.json declares `dsh.bundle.patch`; the
+# profile in `dsh.profile.bundles` selects it, and the Plugin page in the sidebar
+# enables/disables it without hand-editing YAML.
+#
+# The row below inserts the plugin over the profile's empty root. The plugin is
+# host-only: its tools live on `ctx.tools`, so it adds no client bundle and
+# nothing to the composer.
+
+- insert:
+    - id: visual-explainer
+      name: dsh-visual-explainer
+      config:
+        outDir: .dsh-visual
+        scale: 2
+        width: 1240
+        maxCards: 12
+        # 先解释专业/技术名词（visual_terms），再画图（visual_explain）。
+        # 设 false 可关掉门禁（不推荐：图会失去「先名词」这一轮）。
+        termsFirst: true
+        # visual_interactive 生成的交互讲解页目录（相对会话工作目录）。
+        explainerDir: .dsh-explain

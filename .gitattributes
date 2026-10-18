@@ -1,0 +1,8 @@
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.woff2 binary
+
+# Vendored minified browser bundle: keep it out of diffs and language stats.
+assets/mermaid.min.js linguist-vendored -diff

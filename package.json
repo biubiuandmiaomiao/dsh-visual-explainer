@@ -1,0 +1,60 @@
+{
+  "name": "dsh-visual-explainer",
+  "version": "0.2.2",
+  "description": "DeepSeek Harness plugin: explain professional/technical terms first (visual_terms), then render visual explanation cards as PNG (visual_explain) or a clickable offline mermaid page (visual_interactive)",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./renderer": "./renderer.mjs",
+    "./cordis.patch.yml": "./cordis.patch.yml"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "files": [
+    "index.js",
+    "lib/terms.mjs",
+    "lib/interactive.mjs",
+    "assets/mermaid.min.js",
+    "assets/explainer-template.html",
+    "renderer.mjs",
+    "template.html",
+    "skill.md",
+    "cordis.patch.yml",
+    "install.ps1",
+    "README.md",
+    "CHANGELOG.md",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check index.js && node --check renderer.mjs && node --check lib/terms.mjs && node --check lib/interactive.mjs"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "visualization",
+    "explainer",
+    "diagram",
+    "mermaid",
+    "headless-chrome",
+    "education"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/biubiuandmiaomiao/dsh-visual-explainer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/biubiuandmiaomiao/dsh-visual-explainer/issues"
+  },
+  "homepage": "https://github.com/biubiuandmiaomiao/dsh-visual-explainer#readme",
+  "author": "biubiuandmiaomiao",
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

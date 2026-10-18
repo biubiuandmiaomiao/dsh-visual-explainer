@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{{TITLE}}</title>
+<script src="./mermaid.min.js"></script>
+<style>
+  :root{
+    --ink:#1e293b; --ink-2:#475569; --ink-3:#64748b;
+    --line:#e2e8f0; --card:#ffffff; --bg:#f6f8fc;
+    --brand:#6366f1; --brand-2:#eef2ff; --brand-3:#4338ca;
+    --amber:#f59e0b; --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Microsoft YaHei","PingFang SC",system-ui,-apple-system,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #e8ecff 0%, transparent 60%),
+      radial-gradient(900px 500px at 95% 0%, #e6f7f5 0%, transparent 55%),
+      var(--bg);
+    min-height:100vh;
+    padding:28px 22px 56px;
+  }
+  .wrap{max-width:1320px;margin:0 auto}
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:18px}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:.5px}
+  .sub{color:var(--ink-3);font-size:14px}
+  .formula{
+    background:linear-gradient(90deg,#eef2ff,#f0fdfa);
+    border:1px solid #dbe3ff; border-radius:999px;
+    padding:10px 18px; font-size:14.5px; color:var(--brand-3); font-weight:600;
+    white-space:nowrap;
+  }
+  .layout{display:grid;grid-template-columns:352px minmax(0,1fr);gap:20px;align-items:start}
+  @media (max-width:980px){ .layout{grid-template-columns:1fr} }
+
+  .rail{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:12px; max-height:calc(100vh - 120px); overflow:auto; position:sticky; top:18px;
+    box-shadow:0 1px 2px rgba(15,23,42,.04), 0 12px 30px -18px rgba(15,23,42,.25);
+  }
+  .rail h3{margin:8px 10px 10px;font-size:13px;color:var(--ink-3);font-weight:600;letter-spacing:.6px}
+  .item{
+    display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;
+    background:transparent;border:1px solid transparent;border-radius:12px;
+    padding:10px 10px;cursor:pointer;font-family:inherit;color:inherit;margin-bottom:2px;
+    transition:background .15s,border-color .15s;
+  }
+  .item:hover{background:#f8fafc}
+  .item .num{
+    flex:0 0 26px;height:26px;border-radius:9px;background:#f1f5f9;color:var(--ink-3);
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
+  }
+  .item .txt{font-size:14px;line-height:1.45;padding-top:3px}
+  .item .tag{display:block;font-size:11.5px;color:#94a3b8;margin-top:2px}
+  .item.active{background:var(--brand-2);border-color:#c7d2fe}
+  .item.active .num{background:var(--brand);color:#fff}
+  .item.active .txt{color:var(--brand-3);font-weight:600}
+  .item.full{margin-top:8px;border-top:1px dashed #e2e8f0;padding-top:12px}
+  .item.full .num{background:#fef3c7;color:#b45309}
+
+  .stage{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:24px 26px 20px;
+    box-shadow:0 1px 2px rgba(15,23,42,.04), 0 24px 50px -30px rgba(15,23,42,.35);
+  }
+  .kicker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .chip{font-size:12px;padding:4px 10px;border-radius:999px;background:#f1f5f9;color:var(--ink-2);border:1px solid #e2e8f0}
+  .chip.road-a{background:#eef2ff;border-color:#c7d2fe;color:#4338ca}
+  .chip.road-b{background:#ecfeff;border-color:#a5f3fc;color:#0e7490}
+  .chip.all{background:#fffbeb;border-color:#fde68a;color:#b45309}
+  .counter{margin-left:auto;font-size:12.5px;color:#94a3b8;font-variant-numeric:tabular-nums}
+  h2{font-size:22px;margin:2px 0 16px;letter-spacing:.3px}
+  .canvas{
+    border:1px solid #eef2f7;border-radius:14px;background:#fcfdff;
+    padding:10px;overflow:auto;min-height:250px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .canvas svg{max-width:100%;height:auto}
+  .plain{
+    margin:18px 0 0;padding:14px 16px;border-left:4px solid var(--brand);
+    background:#f8faff;border-radius:0 12px 12px 0;
+    font-size:15.5px;line-height:1.95;color:#334155;
+  }
+  .eng{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .eng .lab{font-size:12px;color:#94a3b8;margin-right:2px}
+  .eng code{
+    font-family:"Cascadia Code",Consolas,ui-monospace,monospace;font-size:12px;
+    background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;
+    padding:3px 8px;border-radius:7px;
+  }
+  .hint{margin-top:14px;font-size:13px;color:var(--ink-3);display:flex;gap:8px;align-items:flex-start}
+  .hint b{color:var(--amber);font-weight:700}
+
+  .bar{margin-top:18px;height:6px;background:#eef2f7;border-radius:99px;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#818cf8,#6366f1);transition:width .35s ease}
+
+  .controls{display:flex;gap:10px;align-items:center;margin-top:18px;flex-wrap:wrap}
+  button{
+    font-family:inherit;font-size:14px;border-radius:11px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--ink-2);
+    padding:9px 16px;transition:.15s;font-weight:600;
+  }
+  button:hover{background:#f8fafc;border-color:#cbd5e1}
+  button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  button.primary:hover{background:#4f46e5}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .kbd{margin-left:auto;font-size:12px;color:#94a3b8}
+  .kbd kbd{font-family:inherit;background:#f1f5f9;border:1px solid #e2e8f0;border-bottom-width:2px;border-radius:6px;padding:1px 6px;font-size:11px;color:#475569}
+
+  details.src{margin-top:16px;border-top:1px dashed #e2e8f0;padding-top:12px}
+  details.src summary{cursor:pointer;font-size:13px;color:var(--ink-3);user-select:none}
+  details.src pre{
+    margin:12px 0 0;padding:14px;background:#0f172a;color:#cbd5e1;border-radius:12px;
+    font-family:"Cascadia Code",Consolas,ui-monospace,monospace;font-size:12.5px;
+    line-height:1.65;overflow:auto;max-height:340px;
+  }
+  .err{color:#b91c1c;font-size:14px;padding:20px;text-align:center}
+  footer{margin-top:26px;text-align:center;font-size:12.5px;color:#94a3b8}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>{{TITLE}}</h1>
+      <div class="sub">{{SUBTITLE}}</div>
+    </div>
+    <div class="formula">{{FORMULA}}</div>
+  </header>
+
+  <div class="layout">
+    <aside class="rail" id="rail"></aside>
+
+    <section class="stage">
+      <div class="kicker">
+        <span class="chip" id="sceneChip">开场</span>
+        <span class="chip" id="roadChip" hidden></span>
+        <span class="counter" id="counter">1 / 1</span>
+      </div>
+      <h2 id="title">—</h2>
+      <div class="canvas" id="canvas"></div>
+      <p class="plain" id="plain">—</p>
+      <div class="eng" id="eng"></div>
+      <div class="hint" id="hint" hidden></div>
+      <div class="bar"><i id="progress"></i></div>
+      <div class="controls">
+        <button id="prev">← 上一步</button>
+        <button id="play" class="primary">▶ 自动播放</button>
+        <button id="next">下一步 →</button>
+        <span class="kbd"><kbd>←</kbd> <kbd>→</kbd> 切换 · <kbd>空格</kbd> 播放</span>
+      </div>
+      <details class="src">
+        <summary>查看这一步的 mermaid 源码（可复制去 mermaid.live 画图）</summary>
+        <pre id="src"></pre>
+      </details>
+    </section>
+  </div>
+  <footer>纯本地渲染 · 不联网 · 双击 HTML 即可打开</footer>
+</div>
+
+<script>
+/* =====================================================================
+   1) 参与者：所有步骤共用，保证泳道位置稳定（改文案即可）
+   ===================================================================== */
+const P = [
+  'sequenceDiagram',
+  '    participant S as 发起方',
+  '    participant M as 中枢',
+  '    participant W as 干活的一侧',
+  '    participant O as 展示的一侧'
+].join('\n');
+
+/* =====================================================================
+   2) 步骤：每个对象 = 一步。字段含义：
+      tag    左侧小标签（如 开场 / 分岔 / 路 A）
+      scene  顶部灰色小标签
+      road   'A' / 'B' → 顶部彩色路标（可选）
+      title  这一步的标题
+      plain  下面那段大白话（一行行写，越白越好）
+      eng    原图里的英文写法，用于对照（数组）
+      code   这一步的 mermaid 源码（短标签！每条消息 ≤10 个汉字）
+   ===================================================================== */
+const steps = [
+  {
+    tag: '示例', scene: '开场',
+    title: '① 有人发起了一件事',
+    plain: '【这是示例内容，替换掉即可】写这一段时假设读者完全不懂代码：先说清楚「谁做了什么」，再说「为什么」。',
+    eng: ['onSomethingHappened'],
+    code: P + '\n    S->>M: 有事来了！'
+  },
+  {
+    tag: '示例', scene: '开场',
+    title: '② 中枢先判断要不要处理',
+    plain: '很多事件是噪音，先过滤一道。这一步只做判断，不做重活。',
+    eng: ['maybeHandle()'],
+    code: P + '\n    S->>M: 有事来了！\n    M->>M: 这次要处理吗？'
+  },
+  {
+    tag: '示例', scene: '分岔',
+    title: '③ 分岔：自己干还是交给别人干',
+    plain: '能自己快速处理就自己处理；耗时的事丢给「干活的一侧」，否则界面会卡住。',
+    eng: ['alt', 'submit(task)'],
+    code: P + '\n' + [
+      '    alt 小事（快）',
+      '        M->>M: 自己处理掉',
+      '    else 大事（慢）',
+      '        M->>W: 交给你们',
+      '    end'
+    ].join('\n    ')
+  }
+];
+
+/* =====================================================================
+   3) 全景图：把上面的步骤连起来
+   ===================================================================== */
+const FULL = {
+  tag: '全景', scene: '全景图',
+  title: '全景图：把上面的步骤连起来',
+  plain: '【示例】这里用一段话把整条链路讲完：谁先动、经过谁、最后落在哪。',
+  eng: ['onSomethingHappened', 'maybeHandle()', 'submit(task)'],
+  code: [
+    'sequenceDiagram',
+    '    participant S as 发起方',
+    '    participant M as 中枢',
+    '    participant W as 干活的一侧',
+    '    participant O as 展示的一侧',
+    '',
+    '    S->>M: 有事来了！',
+    '    M->>M: 这次要处理吗？',
+    '    alt 小事（快）',
+    '        M->>M: 自己处理掉',
+    '    else 大事（慢）',
+    '        M->>W: 交给你们',
+    '        W-->>M: 结果好了',
+    '    end',
+    '    M->>O: 把结果贴出来'
+  ].join('\n')
+};
+
+/* =====================================================================
+   4) 以下逻辑一般不用改
+   ===================================================================== */
+const all = steps.concat([FULL]);
+let cur = 0;
+let timer = null;
+let renderToken = 0;
+
+const rail = document.getElementById('rail');
+const el = id => document.getElementById(id);
+
+const railTitle = document.createElement('h3');
+railTitle.textContent = steps.length + ' 步 + 全景 · 点任意一步';
+rail.appendChild(railTitle);
+
+all.forEach((s, i) => {
+  const b = document.createElement('button');
+  b.className = 'item' + (s.tag === '全景' ? ' full' : '');
+  b.innerHTML = '<span class="num">' + (s.tag === '全景' ? '全' : (i + 1)) + '</span>' +
+                '<span class="txt">' + s.title.replace(/^[①-⑬]\s*/, '') +
+                '<span class="tag">' + s.tag + '</span></span>';
+  b.onclick = () => { stop(); go(i); };
+  rail.appendChild(b);
+});
+
+const CFG = {
+  startOnLoad: false,
+  securityLevel: 'loose',
+  theme: 'base',
+  themeVariables: {
+    fontFamily: '"Microsoft YaHei","PingFang SC",system-ui,sans-serif',
+    fontSize: '15px',
+    primaryColor: '#eef2ff',
+    primaryTextColor: '#1e293b',
+    primaryBorderColor: '#6366f1',
+    lineColor: '#64748b',
+    textColor: '#1e293b',
+    actorBkg: '#eef2ff',
+    actorBorder: '#6366f1',
+    actorTextColor: '#1e293b',
+    actorLineColor: '#cbd5e1',
+    signalColor: '#475569',
+    signalTextColor: '#1e293b',
+    noteBkgColor: '#fffbeb',
+    noteTextColor: '#78350f',
+    noteBorderColor: '#fcd34d',
+    labelBoxBkgColor: '#e0e7ff',
+    labelBoxBorderColor: '#a5b4fc',
+    labelTextColor: '#3730a3',
+    loopTextColor: '#3730a3',
+    activationBkgColor: '#e0e7ff',
+    activationBorderColor: '#6366f1'
+  },
+  sequence: {
+    mirrorActors: true,
+    actorMargin: 70,
+    width: 170,
+    height: 52,
+    boxMargin: 10,
+    boxTextMargin: 8,
+    noteMargin: 12,
+    messageMargin: 40,
+    wrap: true
+  }
+};
+
+/* 全景图信息量大，换一套更紧凑的泳道间距 */
+function applyCfg(compact) {
+  const seq = Object.assign({}, CFG.sequence,
+    compact ? { actorMargin: 44, width: 172, height: 50, messageMargin: 30 } : {});
+  mermaid.initialize(Object.assign({}, CFG, { sequence: seq }));
+}
+applyCfg(false);
+
+async function draw(code) {
+  const my = ++renderToken;
+  const box = el('canvas');
+  try {
+    const { svg } = await mermaid.render('dia-' + my + '-' + Date.now(), code);
+    if (my !== renderToken) return;      // 丢弃过期渲染
+    box.innerHTML = svg;
+  } catch (e) {
+    if (my !== renderToken) return;
+    box.innerHTML = '<div class="err">这一步的图没画出来：' + (e && e.message ? e.message : e) + '</div>';
+  }
+}
+
+function go(i) {
+  cur = Math.max(0, Math.min(all.length - 1, i));
+  const s = all[cur];
+
+  el('sceneChip').textContent = s.scene;
+  el('sceneChip').hidden = !!s.road;
+  const rc = el('roadChip');
+  if (s.road === 'A') { rc.hidden = false; rc.className = 'chip road-a'; rc.textContent = '路 A'; }
+  else if (s.road === 'B') { rc.hidden = false; rc.className = 'chip road-b'; rc.textContent = '路 B'; }
+  else if (s.tag === '全景') { rc.hidden = false; rc.className = 'chip all'; rc.textContent = '合起来看'; }
+  else rc.hidden = true;
+
+  el('counter').textContent = (cur + 1) + ' / ' + all.length;
+  el('title').textContent = s.title;
+  el('plain').textContent = s.plain;
+  el('src').textContent = s.code;
+  el('progress').style.width = ((cur + 1) / all.length * 100) + '%';
+
+  el('eng').innerHTML = s.eng.length
+    ? '<span class="lab">原图里的写法：</span>' + s.eng.map(e => '<code>' + e + '</code>').join('')
+    : '';
+
+  const hint = el('hint');
+  if (s.hint) { hint.hidden = false; hint.innerHTML = s.hint; }
+  else hint.hidden = true;
+
+  document.querySelectorAll('.item').forEach((n, idx) => n.classList.toggle('active', idx === cur));
+  const active = document.querySelectorAll('.item')[cur];
+  if (active) active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+  el('prev').disabled = cur === 0;
+  el('next').disabled = cur === all.length - 1;
+
+  applyCfg(s.tag === '全景');
+  draw(s.code);
+}
+
+function next() { if (cur < all.length - 1) go(cur + 1); }
+function prev() { if (cur > 0) go(cur - 1); }
+
+function play() {
+  if (timer) { stop(); return; }
+  if (cur === all.length - 1) go(0);
+  el('play').textContent = '⏸ 暂停';
+  timer = setInterval(() => {
+    if (cur >= all.length - 1) { stop(); return; }
+    next();
+  }, 3000);
+}
+function stop() {
+  if (timer) { clearInterval(timer); timer = null; }
+  el('play').textContent = '▶ 自动播放';
+}
+
+el('next').onclick = () => { stop(); next(); };
+el('prev').onclick = () => { stop(); prev(); };
+el('play').onclick = play;
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') { stop(); next(); }
+  else if (e.key === 'ArrowLeft') { stop(); prev(); }
+  else if (e.code === 'Space') { e.preventDefault(); play(); }
+});
+
+/* 支持 #s4 深链：打开就停在第 4 步 */
+const mDeep = location.hash.match(/^#s(\d+)$/);
+go(mDeep ? Math.min(all.length, Math.max(1, parseInt(mDeep[1], 10))) - 1 : 0);
+
+/* ---------- 自检（explainer_page action=check 依赖它） ---------- */
+if (location.hash === '#selftest') {
+  (async () => {
+    const out = [];
+    for (let i = 0; i < all.length; i++) {
+      try {
+        const { svg } = await mermaid.render('t-' + i, all[i].code);
+        out.push((svg && svg.indexOf('<svg') === 0 ? 'OK   step ' : 'BAD  step ') + (i + 1));
+      } catch (e) {
+        out.push('FAIL step ' + (i + 1) + ' -> ' + (e && e.message ? e.message : e));
+      }
+    }
+    const pre = document.createElement('pre');
+    pre.id = 'selftest';
+    pre.textContent = 'SELFTEST\n' + out.join('\n');
+    document.body.appendChild(pre);
+  })();
+}
+</script>
+</body>
+</html>
